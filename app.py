@@ -5,10 +5,10 @@ from flask_mysqldb import MySQL
 app = Flask(__name__)
 
 # Configure MySQL from environment variables
-app.config['MYSQL_HOST'] = os.environ.get('MYSQL_HOST', 'localhost')
-app.config['MYSQL_USER'] = os.environ.get('MYSQL_USER', 'default_user')
-app.config['MYSQL_PASSWORD'] = os.environ.get('MYSQL_PASSWORD', 'default_password')
-app.config['MYSQL_DB'] = os.environ.get('MYSQL_DB', 'default_db')
+app.config['MYSQL_HOST'] = 'localhost'
+app.config['MYSQL_USER'] = 'admin'
+app.config['MYSQL_PASSWORD'] = 'admin'
+app.config['MYSQL_DB'] = 'mydb'
 
 
 # Initialize MySQL
@@ -39,16 +39,13 @@ def contact():
         message = request.form['message']
 
         cur = mysql.connection.cursor()
-        try:
-            cur.execute("INSERT INTO messages (fullname, emailaddress, phonenumber, message) VALUES (%s, %s, %s, %s)",
-                        (fullname, emailid, phonenumber, message))
-            mysql.connection.commit()
-            cur.close()
-            return render_template('contact.html', success_message="Form submission successful!")
-        except Exception as e:
-            return render_template('contact.html', error_message="Error submitting message: " + str(e))
+        cur.execute("INSERT INTO messages (fullname, emailaddress, phonenumber, message) VALUES (%s, %s, %s, %s)",(fullname, emailid, phonenumber, message))
+        mysql.connection.commit()
+        cur.close()
+    return render_template('contact.html', success_message="Form submission successful!")
+        
 
-    return render_template('contact.html', success_message=None, error_message=None)
+    #return render_template('contact.html', success_message=None, error_message=None)
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+if __name__ == "__main__":
+    app.run(debug=True)
