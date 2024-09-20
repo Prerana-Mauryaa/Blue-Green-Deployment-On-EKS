@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "two-tier-app.name" . }}-flask-service
+spec:
+  selector:
+    app: {{ include "two-tier-app.name" . }}-flask
+  ports:
+    - protocol: TCP
+      port: {{ .Values.serviceFlask.port }}
+      targetPort: {{ .Values.serviceFlask.targetPort }}
+  type: {{ .Values.serviceFlask.type }}

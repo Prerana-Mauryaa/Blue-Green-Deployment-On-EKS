@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "two-tier-app.name" . }}-mysql-initdb-config
+data:
+  init.sql: |
+    {{ .Values.configMapMysql.initSql | nindent 4 }}
