@@ -1,0 +1,4 @@
+apiVersion: v2
+name: mysql-chart
+description: A Helm chart for deploying MySQL
+version: 0.1.0

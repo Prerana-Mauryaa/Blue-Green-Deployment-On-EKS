@@ -1,0 +1,16 @@
+replicaCount: 2
+
+image:
+  repository: preranamauryaa/portfolioflaskapp
+  tag: latest
+
+service:
+  type: LoadBalancer
+  port: 80
+  targetPort: 5000
+
+mysql:
+  host: mysql
+  user: root
+  password: admin
+  database: mydb

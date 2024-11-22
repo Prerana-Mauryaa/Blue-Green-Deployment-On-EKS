@@ -1,0 +1,17 @@
+replicaCount: 1
+
+image:
+  repository: mysql
+  tag: latest
+
+mysql:
+  rootPassword: Prerana@#12345
+  database: contact
+  user: root
+  password: admin
+
+service:
+  type: ClusterIP
+  port: 3306
+
+initDBConfigMap: mysql-initdb-config
