@@ -11,7 +11,7 @@ service:
   nodePort: 30080  # Specify a fixed NodePort or let Kubernetes assign it by removing this line
 
 mysql:
-  host: mysql
+  host: mysql  #change it with the cluster ip of mysql
   user: Prerana
   password: Newuser@#12345
   database: contact

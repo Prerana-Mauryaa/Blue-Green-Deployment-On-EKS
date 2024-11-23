@@ -21,7 +21,10 @@ spec:
             - name: MYSQL_HOST
               value: "{{ .Values.mysql.host }}"
             - name: MYSQL_PASSWORD
-              value: "{{ .Values.mysql.password }}"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "flask.fullname" . }}-mysql-secret  # Reference the MySQL password secret
+                  key: MYSQL_PASSWORD  # Key for the MySQL password in the secret
             - name: MYSQL_USER
               value: "{{ .Values.mysql.user }}"
             - name: MYSQL_DB

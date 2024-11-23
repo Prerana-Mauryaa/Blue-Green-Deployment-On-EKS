@@ -26,9 +26,15 @@ spec:
             - name: MYSQL_DATABASE
               value: "{{ .Values.mysql.database }}"
             - name: MYSQL_USER
-              value: "{{ .Values.mysql.user }}"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "mysql.fullname" . }}-secret
+                  key: MYSQL_USER
             - name: MYSQL_PASSWORD
-              value: "{{ .Values.mysql.password }}"
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "mysql.fullname" . }}-secret
+                  key: MYSQL_PASSWORD
           ports:
             - containerPort: {{ .Values.service.port }}
           volumeMounts:
