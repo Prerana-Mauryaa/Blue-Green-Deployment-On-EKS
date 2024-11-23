@@ -12,6 +12,6 @@ service:
 
 mysql:
   host: mysql
-  user: root
-  password: admin
-  database: mydb
+  user: Prerana
+  password: Newuser@#12345
+  database: contact

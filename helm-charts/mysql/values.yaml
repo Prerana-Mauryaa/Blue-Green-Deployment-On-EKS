@@ -7,8 +7,8 @@ image:
 mysql:
   rootPassword: Prerana@#12345
   database: contact
-  user: root
-  password: admin
+  user: Prerana
+  password: Newuser@#12345
 
 service:
   type: ClusterIP
