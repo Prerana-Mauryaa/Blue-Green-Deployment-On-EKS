@@ -5,10 +5,9 @@ image:
   tag: latest
 
 service:
-  type: NodePort
+  type: LoadBalancer  
   port: 80
   targetPort: 5000
-  nodePort: 30080  # Specify a fixed NodePort or let Kubernetes assign it by removing this line
 
 mysql:
   host: mysql  #change it with the cluster ip of mysql
