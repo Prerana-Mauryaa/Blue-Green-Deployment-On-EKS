@@ -1,0 +1,78 @@
+pipeline {
+    agent any
+
+    environment {
+        CHARTS_DIR = 'helm-charts'
+        FLASK_HELM_CHART = 'flask-app'
+        MYSQL_HELM_CHART = 'mysql'
+        RELEASE_NAME_MYSQL = 'database'
+        RELEASE_NAME_FLASK = 'portfolio'
+        REGISTRY_CREDENTIAL = 'dockerhub'
+        DOCKER_IMAGE_NAME = 'preranamauryaa/portfolioflaskapp'  //  Docker image name
+        DOCKER_IMAGE_TAG = 'latest'  // Tag for the Docker image
+
+    }
+
+    stages {
+        stage("CleanWorkspace") {
+            steps {
+                cleanWs()
+            }
+        }
+        stage('Clone Repo') {
+            steps {
+                checkout scm: [
+                    $class: 'GitSCM',
+                    branches: [[name: '*/master']],  // Branch to checkout
+                    doGenerateSubmoduleConfigurations: false,
+                    extensions: [
+                        [$class: 'CleanBeforeCheckout'],
+                        [$class: 'CloneOption', honorRefspec: true, noTags: true, reference: '', shallow: true]
+                    ],
+                    submoduleCfg: [],
+                    userRemoteConfigs: [
+                        [git credentialsId: 'fd14b46e-2dfd-4629-b859-c2f75b5a4051', url: 'git@github.com:Prerana-Mauryaa/Deployment-of-Two-Tier-App.git']
+                    ]
+                ]
+            }
+        }
+
+         stage('Build and Deploy Docker image') {
+            steps {
+                script {
+                    echo 'Building and pushing the Docker image to Docker Hub'
+                    // Build the Docker image with the tag 'latest'
+                    dockerImage = docker.build("${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}")
+                    
+                    // Push the Docker image to Docker Hub
+                    docker.withRegistry('', REGISTRY_CREDENTIAL) {
+                        dockerImage.push()
+                    }
+                }
+            }
+        }
+
+        stage('Install MySQL') {
+            steps {
+                script {
+                    echo 'Installing or upgrading MySQL using Helm'
+                    // Check if MySQL is already installed, then either upgrade or install
+                    sh '''
+                    helm upgrade --install ${RELEASE_NAME_MYSQL}  ${CHARTS_DIR}/${MYSQL_HELM_CHART}  --wait
+                    '''
+                }
+            }
+        }
+        stage('Install  Flask') {
+            steps {
+                script {
+                    echo 'Installing or upgrading Flask app using Helm'
+                    // Install or upgrade Flask app
+                    sh """
+                    helm upgrade --install ${RELEASE_NAME_FLASK} ${CHARTS_DIR}/${FLASK_HELM_CHART}  --wait
+                    """
+                }
+            }
+        }
+    }
+}

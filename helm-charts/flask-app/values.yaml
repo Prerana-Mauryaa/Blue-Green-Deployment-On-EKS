@@ -10,7 +10,7 @@ service:
   targetPort: 5000
 
 mysql:
-  host: mysql  #change it with the cluster ip of mysql
+  host: database-mysql.default.svc.cluster.local  #change it with the dns of mysql
   user: Prerana
   password: Newuser@#12345
   database: contact
