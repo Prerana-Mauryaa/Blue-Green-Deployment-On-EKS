@@ -11,14 +11,14 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy the requirements file into the container
-COPY flask-portfolio/requirements.txt .
+COPY Flask-portfolio/requirements.txt .
 
 # Install app dependencies
 RUN pip install mysqlclient
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application code
-COPY flask-portfolio/ /app/
+COPY Flask-portfolio/ /app/
 
 # Specify the command to run your application
 CMD ["python", "/app/app.py"]
