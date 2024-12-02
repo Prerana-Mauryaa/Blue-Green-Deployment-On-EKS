@@ -11,7 +11,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy the requirements file into the container
-COPY Flask-portfolio/requirements.txt .
+COPY requirements.txt .
 
 # Install app dependencies
 RUN pip install mysqlclient
