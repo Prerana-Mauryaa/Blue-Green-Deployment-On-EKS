@@ -1,0 +1,19 @@
+replicaCount: 2
+
+image:
+  repository: preranamauryaa/portfolioflaskapp
+  tag: blue
+
+service:
+  type: LoadBalancer  
+  port: 80
+  targetPort: 5000
+
+mysql:
+  host: database-mysql.default.svc.cluster.local  #change it with the dns of mysql
+  user: Prerana
+  password: Newuser@#12345
+  database: contact
+
+labels:
+  traffic: active

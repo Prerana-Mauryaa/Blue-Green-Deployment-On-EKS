@@ -4,15 +4,18 @@ metadata:
   name: {{ include "flask.fullname" . }}
   labels:
     app: {{ include "flask.fullname" . }}
+    traffic: {{ .Values.labels.traffic }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
       app: {{ include "flask.fullname" . }}
+      traffic: {{ .Values.labels.traffic }}
   template:
     metadata:
       labels:
         app: {{ include "flask.fullname" . }}
+        traffic: {{ .Values.labels.traffic }}
     spec:
       containers:
         - name: flaskapp

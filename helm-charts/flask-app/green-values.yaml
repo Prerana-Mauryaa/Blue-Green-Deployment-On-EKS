@@ -2,7 +2,7 @@ replicaCount: 2
 
 image:
   repository: preranamauryaa/portfolioflaskapp
-  tag: latest
+  tag: green
 
 service:
   type: LoadBalancer  
@@ -14,3 +14,6 @@ mysql:
   user: Prerana
   password: Newuser@#12345
   database: contact
+
+labels:
+  traffic: inactive

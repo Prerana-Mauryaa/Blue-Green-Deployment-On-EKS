@@ -8,12 +8,17 @@ pipeline {
         RELEASE_NAME_MYSQL = 'database'
         RELEASE_NAME_FLASK = 'portfolio'
         REGISTRY_CREDENTIAL = 'dockerhub'
-        DOCKER_IMAGE_NAME = 'preranamauryaa/portfolioflaskapp'  // Docker image name
-        DOCKER_IMAGE_TAG = 'latest'  // Tag for the Docker image
+        DOCKER_IMAGE_NAME = 'preranamauryaa/portfolioflaskapp'
+    }
+
+    parameters {
+        choice(name: 'DEPLOY_ENV', choices: ['blue', 'green'], description: 'Choose which environment to deploy: Blue or Green')
+        string(name: 'DOCKER_TAG', defaultValue: 'latest', description: 'Specify the Docker image tag for the deployment')
+        booleanParam(name: 'SWITCH_TRAFFIC', defaultValue: false, description: 'Switch traffic between Blue and Green')
     }
 
     stages {
-        stage("CleanWorkspace") {
+        stage('CleanWorkspace') {
             steps {
                 cleanWs()
             }
@@ -23,13 +28,11 @@ pipeline {
             steps {
                 checkout([
                     $class: 'GitSCM',
-                    branches: [[name: '*/master']],  // Branch to checkout
-                    doGenerateSubmoduleConfigurations: false,
+                    branches: [[name: '*/master']],
                     extensions: [
                         [$class: 'CleanBeforeCheckout'],
-                        [$class: 'CloneOption', honorRefspec: true, noTags: true, reference: '', shallow: true]
+                        [$class: 'CloneOption', honorRefspec: true, noTags: true, shallow: true]
                     ],
-                    submoduleCfg: [],
                     userRemoteConfigs: [
                         [credentialsId: 'fd14b46e-2dfd-4629-b859-c2f75b5a4051', url: 'git@github.com:Prerana-Mauryaa/Deployment-of-Two-Tier-App.git']
                     ]
@@ -37,14 +40,11 @@ pipeline {
             }
         }
 
-        stage('Build and Deploy Docker image') {
+        stage('Build, Tag, and Publish Docker image') {
             steps {
                 script {
                     echo 'Building and pushing the Docker image to Docker Hub'
-                    // Build the Docker image with the tag 'latest'
-                    dockerImage = docker.build("${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}")
-
-                    // Push the Docker image to Docker Hub
+                    dockerImage = docker.build("${DOCKER_IMAGE_NAME}:${params.DOCKER_TAG}")
                     docker.withRegistry('', REGISTRY_CREDENTIAL) {
                         dockerImage.push()
                     }
@@ -56,24 +56,42 @@ pipeline {
             steps {
                 script {
                     echo 'Installing or upgrading MySQL using Helm'
-                    // Check if MySQL is already installed, then either upgrade or install
-                    sh '''
-                    helm upgrade --install ${RELEASE_NAME_MYSQL}  ${CHARTS_DIR}/${MYSQL_HELM_CHART}  --wait
-                    '''
-                }
-            }
-        }
-
-        stage('Install Flask') {
-            steps {
-                script {
-                    echo 'Installing or upgrading Flask app using Helm'
-                    // Install or upgrade Flask app
                     sh """
-                    helm upgrade --install ${RELEASE_NAME_FLASK} ${CHARTS_DIR}/${FLASK_HELM_CHART}  --wait
+                    helm upgrade --install ${RELEASE_NAME_MYSQL} ${CHARTS_DIR}/${MYSQL_HELM_CHART} --wait
                     """
                 }
             }
         }
+
+        stage('Deploy on EKS') {
+            steps {
+                script {
+                    echo "Deploying Flask app to ${params.DEPLOY_ENV} environment"
+                    sh """
+                    helm upgrade --install ${RELEASE_NAME_FLASK}-${params.DEPLOY_ENV} \
+                        ${CHARTS_DIR}/${FLASK_HELM_CHART} \
+                        --values ${CHARTS_DIR}/${FLASK_HELM_CHART}/${params.DEPLOY_ENV}-values.yaml \
+                        --set image.tag=${params.DOCKER_TAG} \
+                        --wait
+                    """
+                }
+            }
+        }
+
+        stage('Switch Traffic') {
+            when {
+                expression { params.SWITCH_TRAFFIC }
+            }
+            steps {
+                script {
+                    echo "Switching traffic to ${params.DEPLOY_ENV} environment"
+                    sh """
+                    kubectl patch service flask-service \
+                        -p '{"spec": {"selector": {"app": "portfolio-${params.DEPLOY_ENV}"}}}'
+                    """
+                }
+            }
+        }
+
     }
 }

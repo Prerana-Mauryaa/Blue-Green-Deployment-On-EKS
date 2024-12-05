@@ -5,6 +5,7 @@ metadata:
 spec:
   selector:
     app: {{ include "flask.fullname" . }}
+    traffic: active
   type: {{ .Values.service.type }}  
   ports:
     - protocol: TCP
