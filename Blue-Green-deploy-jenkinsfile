@@ -34,7 +34,7 @@ pipeline {
                         [$class: 'CloneOption', honorRefspec: true, noTags: true, shallow: true]
                     ],
                     userRemoteConfigs: [
-                        [credentialsId: 'fd14b46e-2dfd-4629-b859-c2f75b5a4051', url: 'git@github.com:Prerana-Mauryaa/Deployment-of-Two-Tier-App.git']
+                        [git credentialsId: '3b913c1d-d3d7-4c21-8bed-e799b52bb9f3', url: 'git@github.com:Prerana-Mauryaa/Deployment-of-Two-Tier-App.git']
                     ]
                 ])
             }
