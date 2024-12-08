@@ -26,19 +26,21 @@ pipeline {
 
         stage('Clone Repo') {
             steps {
-                checkout([
+                checkout scm: [
                     $class: 'GitSCM',
-                    branches: [[name: '*/master']],
+                    branches: [[name: '*/master']],  // Branch to checkout
+                    doGenerateSubmoduleConfigurations: false,
                     extensions: [
                         [$class: 'CleanBeforeCheckout'],
-                        [$class: 'CloneOption', honorRefspec: true, noTags: true, shallow: true]
+                        [$class: 'CloneOption', honorRefspec: true, noTags: true, reference: '', shallow: true]
                     ],
+                    submoduleCfg: [],
                     userRemoteConfigs: [
-                        git credentialsId: '883b0edd-cee6-41cb-bcf6-aac6b3142818', url: 'git@github.com:Prerana-Mauryaa/Deployment-of-Two-Tier-App.git'
+                        [credentialsId: '883b0edd-cee6-41cb-bcf6-aac6b3142818', url: 'git@github.com:Prerana-Mauryaa/Deployment-of-Two-Tier-App.git']
                     ]
-                ])
+                ]
             }
-        }
+}
 
         stage('Build, Tag, and Publish Docker image') {
             steps {
