@@ -1,6 +1,10 @@
 pipeline {
     agent any
-
+    parameters {
+        choice(name: 'DEPLOY_ENV', choices: ['blue', 'green'], description: 'Choose which environment to deploy: Blue or Green')
+        string(name: 'DOCKER_TAG', defaultValue: 'latest', description: 'Specify the Docker image tag for the deployment')
+        booleanParam(name: 'SWITCH_TRAFFIC', defaultValue: false, description: 'Switch traffic between Blue and Green')
+    }
     environment {
         CHARTS_DIR = 'helm-charts'
         FLASK_HELM_CHART = 'flask-app'
@@ -9,13 +13,10 @@ pipeline {
         RELEASE_NAME_FLASK = 'portfolio'
         REGISTRY_CREDENTIAL = 'dockerhub'
         DOCKER_IMAGE_NAME = 'preranamauryaa/portfolioflaskapp'
+        DOCKER_IMAGE_TAG = {params.DOCKER_TAG}
     }
 
-    parameters {
-        choice(name: 'DEPLOY_ENV', choices: ['blue', 'green'], description: 'Choose which environment to deploy: Blue or Green')
-        string(name: 'DOCKER_TAG', defaultValue: 'latest', description: 'Specify the Docker image tag for the deployment')
-        booleanParam(name: 'SWITCH_TRAFFIC', defaultValue: false, description: 'Switch traffic between Blue and Green')
-    }
+
 
     stages {
         stage('CleanWorkspace') {
@@ -42,11 +43,14 @@ pipeline {
             }
 }
 
-        stage('Build, Tag, and Publish Docker image') {
+        stage('Build and Deploy Docker image') {
             steps {
                 script {
                     echo 'Building and pushing the Docker image to Docker Hub'
-                    dockerImage = docker.build("${DOCKER_IMAGE_NAME}:${params.DOCKER_TAG}")
+                    // Build the Docker image with the tag 'latest'
+                    dockerImage = docker.build("${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}")
+                    
+                    // Push the Docker image to Docker Hub
                     docker.withRegistry('', REGISTRY_CREDENTIAL) {
                         dockerImage.push()
                     }
