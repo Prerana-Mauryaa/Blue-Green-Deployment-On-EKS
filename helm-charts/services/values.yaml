@@ -12,7 +12,7 @@ ingress:
   className: "nginx" # Specify the Ingress class
   hosts:
     prod: "prod.flaskapp"
-    qaPreprod: "QAPreprod.flaskapp"
+    qaPreprod: "qapreprod.flaskapp"
   services:
     prod:
       name: "prod-service"
