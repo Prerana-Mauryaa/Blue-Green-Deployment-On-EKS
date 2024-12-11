@@ -46,7 +46,7 @@ pipeline {
 
         stage('Build and Push Docker Image') {
             when {
-                expression { !params.SWITCH_TRAFFIC and !params.ROLLBACK and !params.DELETE_PREPROD_RESOURCES }
+                expression { !params.SWITCH_TRAFFIC && !params.ROLLBACK && !params.DELETE_PREPROD_RESOURCES }
             }
             steps {
                 script {
@@ -61,7 +61,7 @@ pipeline {
 
         stage('Install MySQL') {
             when {
-                expression { !params.SWITCH_TRAFFIC and !params.ROLLBACK and !params.DELETE_PREPROD_RESOURCES }
+                expression { !params.SWITCH_TRAFFIC && !params.ROLLBACK && !params.DELETE_PREPROD_RESOURCES }
             }
             steps {
                 script {
@@ -73,7 +73,7 @@ pipeline {
 
         stage('Install Flask App') {
             when {
-                expression { !params.SWITCH_TRAFFIC and !params.ROLLBACK and !params.DELETE_PREPROD_RESOURCES}
+                expression { !params.SWITCH_TRAFFIC && !params.ROLLBACK && !params.DELETE_PREPROD_RESOURCES}
             }
             steps {
                 script {
@@ -111,7 +111,7 @@ pipeline {
 
         stage('Switch Traffic') {
             when {
-                expression { params.SWITCH_TRAFFIC and !params.ROLLBACK and !params.DELETE_PREPROD_RESOURCES } 
+                expression { params.SWITCH_TRAFFIC && !params.ROLLBACK && !params.DELETE_PREPROD_RESOURCES } 
             }
             steps {
                 script {
@@ -124,7 +124,7 @@ pipeline {
         }
         stage('Delete Pre-Prod Resources') {
             when {
-                expression { params.DELETE_PREPROD_RESOURCES and !params.ROLLBACK and !params.SWITCH_TRAFFIC }
+                expression { params.DELETE_PREPROD_RESOURCES && !params.ROLLBACK && !params.SWITCH_TRAFFIC }
             }
             steps {
                 script {
@@ -143,7 +143,7 @@ pipeline {
 
         stage('Rollback') {
             when {
-                expression { params.ROLLBACK  and !params.SWITCH_TRAFFIC and !params.DELETE_PREPROD_RESOURCES }
+                expression { params.ROLLBACK  && !params.SWITCH_TRAFFIC && !params.DELETE_PREPROD_RESOURCES }
             }
             steps {
                 script {
