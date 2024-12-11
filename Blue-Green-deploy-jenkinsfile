@@ -96,12 +96,12 @@ pipeline {
                     echo "Forwarding Traffic to ${params.DEPLOY_ENV} environment"
                     if (params.DEPLOY_ENV == "blue") {
                         sh """
-                        kubectl patch service ${RELEASE_NAME_SERVICE}-prod \
+                        kubectl patch service ${RELEASE_NAME_SERVICE}-flaskapp-prod \
                         -p '{"spec": {"selector": {"app": "${RELEASE_NAME_FLASK}-${params.DEPLOY_ENV}-flaskapp", "traffic": "blue-traffic"}}}'
                     """
                     } else {
                         sh """
-                        kubectl patch service ${RELEASE_NAME_SERVICE}-preprod \
+                        kubectl patch service ${RELEASE_NAME_SERVICE}-flaskapp-preprod \
                         -p '{"spec": {"selector": {"app": "${RELEASE_NAME_FLASK}-${params.DEPLOY_ENV}-flaskapp", "traffic": "green-traffic"}}}'
                     """
                     }
