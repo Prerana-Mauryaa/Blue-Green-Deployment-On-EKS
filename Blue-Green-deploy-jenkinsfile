@@ -12,7 +12,7 @@ pipeline {
         CHARTS_DIR = 'helm-charts'
         FLASK_HELM_CHART = 'flask-app'
         MYSQL_HELM_CHART = 'mysql'
-        SERVICE_HELM_CHART = 'service'
+        SERVICE_HELM_CHART = 'services'
         RELEASE_NAME_MYSQL = 'database'
         RELEASE_NAME_SERVICE = 'service'
         REGISTRY_CREDENTIAL = 'dockerhub'
