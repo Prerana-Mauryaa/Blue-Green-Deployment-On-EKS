@@ -118,7 +118,7 @@ pipeline {
                     echo "Switching traffic"
                     
                     sh "chmod +x /switch-ingress-service.sh"
-                    ${CHARTS_DIR}/switch-traffic.sh ${RELEASE_NAME_SERVICE}-ingress
+                    sh "${CHARTS_DIR}/switch-traffic.sh ${RELEASE_NAME_SERVICE}-ingress"
                 }
             }
         }
@@ -150,7 +150,7 @@ pipeline {
                     echo "Rolling back to the previous environment"
                     
                     sh "chmod +x /switch-ingress-service.sh"
-                    ${CHARTS_DIR}/switch-ingress-service.sh ${RELEASE_NAME_SERVICE}-ingress
+                    sh "${CHARTS_DIR}/switch-traffic.sh ${RELEASE_NAME_SERVICE}-ingress"
                 }
             }
         }
