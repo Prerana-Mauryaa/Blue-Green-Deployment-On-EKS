@@ -3,22 +3,26 @@ pipeline {
     parameters {
         choice(name: 'DEPLOY_ENV', choices: ['blue', 'green'], description: 'Choose which environment to deploy: Blue or Green')
         string(name: 'DOCKER_TAG', defaultValue: 'latest', description: 'Specify the Docker image tag for the deployment')
-        booleanParam(name: 'SWITCH_TRAFFIC', defaultValue: false, description: 'Switch traffic between Blue and Green')
+        booleanParam(name: 'SWITCH_TRAFFIC', defaultValue: false, description: 'Switch traffic between Blue and Green environments')
+        booleanParam(name: 'DELETE_PREPROD_RESOURCES', defaultValue: false, description: 'Delete pre-production resources if no longer needed')
+        booleanParam(name: 'ROLLBACK', defaultValue: false, description: 'Roll back to the previous environment')
     }
 
     environment {
         CHARTS_DIR = 'helm-charts'
         FLASK_HELM_CHART = 'flask-app'
         MYSQL_HELM_CHART = 'mysql'
+        SERVICE_HELM_CHART = 'service'
         RELEASE_NAME_MYSQL = 'database'
-        RELEASE_NAME_FLASK = 'portfolio'
+        RELEASE_NAME_SERVICE = 'service'
         REGISTRY_CREDENTIAL = 'dockerhub'
         DOCKER_IMAGE_NAME = 'preranamauryaa/portfolioflaskapp'
         DOCKER_IMAGE_TAG = "${params.DOCKER_TAG}"
+        RELEASE_NAME_FLASK = "portfolio-${DOCKER_IMAGE_TAG}"
     }
 
     stages {
-        stage('CleanWorkspace') {
+        stage('Clean Workspace') {
             steps {
                 cleanWs()
             }
@@ -28,28 +32,26 @@ pipeline {
             steps {
                 checkout scm: [
                     $class: 'GitSCM',
-                    branches: [[name: '*/master']],  // Branch to checkout
+                    branches: [[name: '*/master']], 
                     doGenerateSubmoduleConfigurations: false,
                     extensions: [
-                        [$class: 'CleanBeforeCheckout'],
-                        [$class: 'CloneOption', honorRefspec: true, noTags: true, reference: '', shallow: true]
+                        [$class: 'CleanBeforeCheckout']
                     ],
-                    submoduleCfg: [],
                     userRemoteConfigs: [
                         [credentialsId: '883b0edd-cee6-41cb-bcf6-aac6b3142818', url: 'git@github.com:Prerana-Mauryaa/Deployment-of-Two-Tier-App.git']
                     ]
                 ]
             }
-}
+        }
 
-        stage('Build and Deploy Docker image') {
+        stage('Build and Push Docker Image') {
+            when {
+                expression { !params.SWITCH_TRAFFIC and !params.ROLLBACK and !params.DELETE_PREPROD_RESOURCES }
+            }
             steps {
                 script {
                     echo 'Building and pushing the Docker image to Docker Hub'
-                    // Build the Docker image with the tag 'latest'
                     dockerImage = docker.build("${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}")
-                    
-                    // Push the Docker image to Docker Hub
                     docker.withRegistry('', REGISTRY_CREDENTIAL) {
                         dockerImage.push()
                     }
@@ -58,17 +60,21 @@ pipeline {
         }
 
         stage('Install MySQL') {
+            when {
+                expression { !params.SWITCH_TRAFFIC and !params.ROLLBACK and !params.DELETE_PREPROD_RESOURCES }
+            }
             steps {
                 script {
                     echo 'Installing or upgrading MySQL using Helm'
-                    sh """
-                    helm upgrade --install ${RELEASE_NAME_MYSQL} ${CHARTS_DIR}/${MYSQL_HELM_CHART} --wait
-                    """
+                    sh "helm upgrade --install ${RELEASE_NAME_MYSQL} ${CHARTS_DIR}/${MYSQL_HELM_CHART} --wait"
                 }
             }
         }
 
-        stage('Deploy on EKS') {
+        stage('Install Flask App') {
+            when {
+                expression { !params.SWITCH_TRAFFIC and !params.ROLLBACK and !params.DELETE_PREPROD_RESOURCES}
+            }
             steps {
                 script {
                     echo "Deploying Flask app to ${params.DEPLOY_ENV} environment"
@@ -79,24 +85,74 @@ pipeline {
                         --set image.tag=${DOCKER_IMAGE_TAG} \
                         --wait
                     """
+
+                    echo "Installing or upgrading the service for ${params.DEPLOY_ENV} environment"
+                    sh """
+                    helm upgrade --install ${RELEASE_NAME_SERVICE} \
+                        ${CHARTS_DIR}/${SERVICE_HELM_CHART} \
+                        --wait
+                    """
+
+                    echo "Forwarding Traffic to ${params.DEPLOY_ENV} environment"
+                    if (params.DEPLOY_ENV == "blue") {
+                        sh """
+                        kubectl patch service ${RELEASE_NAME_SERVICE}-prod \
+                        -p '{"spec": {"selector": {"app": "${RELEASE_NAME_FLASK}-${params.DEPLOY_ENV}-flaskapp", "traffic": "blue-traffic"}}}'
+                    """
+                    } else {
+                        sh """
+                        kubectl patch service ${RELEASE_NAME_SERVICE}-preprod \
+                        -p '{"spec": {"selector": {"app": "${RELEASE_NAME_FLASK}-${params.DEPLOY_ENV}-flaskapp", "traffic": "green-traffic"}}}'
+                    """
+                    }
                 }
             }
         }
 
         stage('Switch Traffic') {
             when {
-                expression { params.SWITCH_TRAFFIC }
+                expression { params.SWITCH_TRAFFIC and !params.ROLLBACK and !params.DELETE_PREPROD_RESOURCES } 
             }
             steps {
                 script {
-                    echo "Switching traffic to ${params.DEPLOY_ENV} environment"
-                    sh """
-                    kubectl patch service flask-service \
-                        -p '{"spec": {"selector": {"app": "portfolio-${params.DEPLOY_ENV}"}}}'
-                    """
+                    echo "Switching traffic"
+                    
+                    sh "chmod +x /switch-ingress-service.sh"
+                    ${CHARTS_DIR}/switch-traffic.sh ${RELEASE_NAME_SERVICE}-ingress
+                }
+            }
+        }
+        stage('Delete Pre-Prod Resources') {
+            when {
+                expression { params.DELETE_PREPROD_RESOURCES and !params.ROLLBACK and !params.SWITCH_TRAFFIC }
+            }
+            steps {
+                script {
+                    def currentService = sh(script: """
+                        kubectl get ingress ${RELEASE_NAME_SERVICE}-ingress -o=jsonpath='{.spec.rules[1].http.paths[0].backend.service.name}'
+                    """, returnStdout: true).trim()
+
+                    // Get the selector for the current service
+                    def currentServiceSelector = sh(script: """
+                        kubectl get service ${currentService} -o=jsonpath='{.spec.selector.app}'
+                    """, returnStdout: true).trim()
+                    helm uninstall ${currentServiceSelector}
                 }
             }
         }
 
+        stage('Rollback') {
+            when {
+                expression { params.ROLLBACK  and !params.SWITCH_TRAFFIC and !params.DELETE_PREPROD_RESOURCES }
+            }
+            steps {
+                script {
+                    echo "Rolling back to the previous environment"
+                    
+                    sh "chmod +x /switch-ingress-service.sh"
+                    ${CHARTS_DIR}/switch-ingress-service.sh ${RELEASE_NAME_SERVICE}-ingress
+                }
+            }
+        }
     }
 }

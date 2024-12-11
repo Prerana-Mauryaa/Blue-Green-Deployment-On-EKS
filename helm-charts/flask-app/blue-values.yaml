@@ -16,4 +16,4 @@ mysql:
   database: contact
 
 labels:
-  traffic: active
+  traffic: blue-traffic

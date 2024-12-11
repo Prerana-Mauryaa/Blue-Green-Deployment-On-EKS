@@ -1,0 +1,4 @@
+apiVersion: v2
+name: flask-service
+description: A Helm chart for deploying the Flask app service
+version: 0.1.0

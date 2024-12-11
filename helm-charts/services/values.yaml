@@ -1,0 +1,22 @@
+service:
+  type: LoadBalancer  
+  port: 80
+  targetPort: 5000
+
+labels:
+  traffic: active # It will be changed dynamically at the time of deployment
+  app: blue  # It will be changed dynamically at the time of deployment
+
+ingress:
+  enabled: true
+  className: "nginx" # Specify the Ingress class
+  hosts:
+    prod: "prod.flaskapp"
+    qaPreprod: "QAPreprod.flaskapp"
+  services:
+    prod:
+      name: "prod-service"
+      port: 80
+    qaPreprod:
+      name: "qa-preprod-service"
+      port: 80
