@@ -38,7 +38,7 @@ pipeline {
                         [$class: 'CleanBeforeCheckout']
                     ],
                     userRemoteConfigs: [
-                        [credentialsId: '883b0edd-cee6-41cb-bcf6-aac6b3142818', url: 'git@github.com:Prerana-Mauryaa/Deployment-of-Two-Tier-App.git']
+                        [credentialsId: '90f6337a-2974-483f-9adb-f0f9d46198b7', url: 'git@github.com:Prerana-Mauryaa/Deployment-of-Two-Tier-App.git']
                     ]
                 ]
             }
