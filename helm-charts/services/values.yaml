@@ -15,8 +15,8 @@ ingress:
     qaPreprod: "qapreprod-flaskapp.us.to"
   services:
     prod:
-      name: "prod-service"
+      name: "service-flaskapp-prod"
       port: 80
     qaPreprod:
-      name: "qa-preprod-service"
+      name: "service-flaskapp-preprod"
       port: 80
