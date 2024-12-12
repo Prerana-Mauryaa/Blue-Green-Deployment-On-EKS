@@ -144,12 +144,8 @@ pipeline {
                 }
             } else {
                 // If selector is not blue-traffic or green-traffic, uninstall both
-                helm uninstall ${RELEASE_NAME_FLASK}-blue
-                helm uninstall ${RELEASE_NAME_FLASK}-green
+                echo "No release to delete"
             }
-
-            // Uninstall the current service if necessary
-            helm uninstall ${currentServiceSelector}
         }
     }
 }
