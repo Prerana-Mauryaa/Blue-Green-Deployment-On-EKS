@@ -99,7 +99,7 @@ pipeline {
                         kubectl patch service ${RELEASE_NAME_SERVICE}-flaskapp-prod \
                         -p '{"spec": {"selector": {"app": "${RELEASE_NAME_FLASK}-${params.DEPLOY_ENV}-flaskapp", "traffic": "blue-traffic"}}}'
                     """
-                    } else-if (params.DEPLOY_ENV == "green") {
+                    } else if (params.DEPLOY_ENV == "green") {
                         sh """
                         kubectl patch service ${RELEASE_NAME_SERVICE}-flaskapp-preprod \
                         -p '{"spec": {"selector": {"app": "${RELEASE_NAME_FLASK}-${params.DEPLOY_ENV}-flaskapp", "traffic": "green-traffic"}}}'
