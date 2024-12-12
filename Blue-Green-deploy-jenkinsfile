@@ -110,23 +110,49 @@ pipeline {
             }
         }
         stage('Delete Pre-Prod Resources') {
-            when {
-                expression { params.DELETE_PREPROD_RESOURCES && !params.ROLLBACK && !params.SWITCH_TRAFFIC }
-            }
-            steps {
-                script {
-                    def currentService = sh(script: """
-                        kubectl get ingress ${RELEASE_NAME_SERVICE}-ingress -o=jsonpath='{.spec.rules[1].http.paths[0].backend.service.name}'
-                    """, returnStdout: true).trim()
+    when {
+        expression { params.DELETE_PREPROD_RESOURCES && !params.ROLLBACK && !params.SWITCH_TRAFFIC }
+    }
+    steps {
+        script {
+            def currentService = sh(script: """
+                kubectl get ingress ${RELEASE_NAME_SERVICE}-ingress -o=jsonpath='{.spec.rules[1].http.paths[0].backend.service.name}'
+            """, returnStdout: true).trim()
 
-                    // Get the selector for the current service
-                    def currentServiceSelector = sh(script: """
-                        kubectl get service ${currentService} -o=jsonpath='{.spec.selector.app}'
-                    """, returnStdout: true).trim()
-                    helm uninstall ${currentServiceSelector}
+            // Get the selector for the current service
+            def currentServiceSelector = sh(script: """
+                kubectl get service ${currentService} -o=jsonpath='{.spec.selector.traffic}'
+            """, returnStdout: true).trim()
+            
+            if (currentServiceSelector == "blue-traffic") {
+                // Find the release name that contains 'blue'
+                def releaseToDelete = sh(script: """
+                    helm ls -n default | grep blue | awk '{print \$1}'
+                """, returnStdout: true).trim()
+                // Uninstall the blue release
+                if (releaseToDelete) {
+                    sh "helm uninstall ${releaseToDelete}"
                 }
+            } else if (currentServiceSelector == "green-traffic") {
+                // Find the release name that contains 'green'
+                def releaseToDelete = sh(script: """
+                    helm ls -n default | grep green | awk '{print \$1}'
+                """, returnStdout: true).trim()
+                // Uninstall the green release
+                if (releaseToDelete) {
+                    sh "helm uninstall ${releaseToDelete}"
+                }
+            } else {
+                // If selector is not blue-traffic or green-traffic, uninstall both
+                helm uninstall ${RELEASE_NAME_FLASK}-blue
+                helm uninstall ${RELEASE_NAME_FLASK}-green
             }
+
+            // Uninstall the current service if necessary
+            helm uninstall ${currentServiceSelector}
         }
+    }
+}
 
         stage('Rollback') {
             when {
