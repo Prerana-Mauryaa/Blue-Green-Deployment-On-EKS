@@ -4,8 +4,7 @@ metadata:
   name: {{ include "service.fullname" . }}-prod
 spec:
   selector:
-    app: {{ .Values.labels.app }} 
-    traffic: {{ .Values.labels.traffic }}  
+    traffic: blue-traffic
   type: {{ .Values.service.type }}  
   ports:
     - protocol: TCP
