@@ -18,14 +18,14 @@ if [ "$CURRENT_SERVICE" == "$SERVICE_1_NAME" ]; then
   # Upgrade Helm chart to switch to the pre-prod service
   helm upgrade $HELM_RELEASE_NAME ${CHART_PATH} \
     --set ingress.services.prod.name=$SERVICE_2_NAME \
-    --set ingress.services.qaPreprod.name=$SERVICE_2_NAME
+    --set ingress.services.qaPreprod.name=$SERVICE_1_NAME
 else
   echo "Switching traffic from $SERVICE_2_NAME to $SERVICE_1_NAME"
 
   # Upgrade Helm chart to switch to the prod service
   helm upgrade $HELM_RELEASE_NAME ${CHART_PATH} \
     --set ingress.services.prod.name=$SERVICE_1_NAME \
-    --set ingress.services.qaPreprod.name=$SERVICE_1_NAME
+    --set ingress.services.qaPreprod.name=$SERVICE_2_NAME
 fi
 
 echo "Traffic switch complete."
