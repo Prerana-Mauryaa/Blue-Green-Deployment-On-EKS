@@ -11,8 +11,8 @@ ingress:
   enabled: true
   className: "nginx" # Specify the Ingress class
   hosts:
-    prod: "prod.flaskapp"
-    qaPreprod: "qapreprod.flaskapp"
+    prod: "prod-flaskapp.us.to"
+    qaPreprod: "qapreprod-flaskapp.us.to"
   services:
     prod:
       name: "prod-service"

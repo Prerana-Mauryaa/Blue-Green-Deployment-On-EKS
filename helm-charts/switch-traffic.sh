@@ -4,9 +4,9 @@
 INGRESS_NAME=$1
 
 # Define services
-SERVICE_1_NAME="service-prod"
+SERVICE_1_NAME="service-flaskapp-prod"
 SERVICE_1_PORT=80
-SERVICE_2_NAME="service-preprod"
+SERVICE_2_NAME="service-flaskapp-preprod"
 SERVICE_2_PORT=80
 
 # Get current service being used in the ingress
