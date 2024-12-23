@@ -132,6 +132,7 @@ pipeline {
                 // Uninstall the blue release
                 if (releaseToDelete) {
                     sh "helm uninstall ${releaseToDelete}"
+                    echo "The Blue environment is now empty. You can deploy the new version in Blue."
                 }
             } else if (currentServiceSelector == "green-traffic") {
                 // Find the release name that contains 'green'
@@ -141,6 +142,7 @@ pipeline {
                 // Uninstall the green release
                 if (releaseToDelete) {
                     sh "helm uninstall ${releaseToDelete}"
+                    echo "The Green environment is now empty. You can deploy the new version in Green."
                 }
             } else {
                 // If selector is not blue-traffic or green-traffic, uninstall both
