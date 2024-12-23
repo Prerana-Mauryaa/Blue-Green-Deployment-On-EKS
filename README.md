@@ -285,12 +285,13 @@ We use helm upgrade instead of kubectl patch because it ensures changes are cons
 
 ### Images
 #### prod-flaskapp.us.to
-![pipeline-stage-view](https://github.com/Prerana-Mauryaa/Blue-Green-Deployment-On-EKS/blob/master/ScreenShots/green-flask-app.png)
+![Prod](https://github.com/Prerana-Mauryaa/Blue-Green-Deployment-On-EKS/blob/master/ScreenShots/green-flask-app.png)
 
 
 #### qapreprod-flaskapp.us.to
-![pipeline-stage-view](https://github.com/Prerana-Mauryaa/Blue-Green-Deployment-On-EKS/blob/master/ScreenShots/Blue-flask-app.png)
+![Pre Prod](https://github.com/Prerana-Mauryaa/Blue-Green-Deployment-On-EKS/blob/master/ScreenShots/Blue-flask-app.png)
 
 
-
+## Rules for next Deployment 
+![Rules for next deployment](https://github.com/Prerana-Mauryaa/Blue-Green-Deployment-On-EKS/blob/master/Diagrams/Process.png)
 
