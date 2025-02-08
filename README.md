@@ -1,7 +1,7 @@
 # Blue Green Deployment of Flask portfolio on EKS using Helm Charts
 This project implements a Blue-Green deployment strategy to seamlessly deploy a Flask-based portfolio application on Amazon EKS. Using a Jenkins pipeline, the workflow automates code retrieval from GitHub, builds, tags, and Dockerizes the application. The deployment process dynamically switches between Blue and Green environments based on the selected configuration, ensuring zero-downtime updates and smooth application rollouts and rollback.
 
-![Blue Green Deployment](https://github.com/Prerana-Mauryaa/Blue-Green-Deployment-On-EKS/blob/master/Diagrams/before_switching.png)
+![Blue Green Deployment](https://github.com/Prerana-Mauryaa/Blue-Green-Deployment-On-EKS/blob/master/Diagrams/befor_switching.png)
 
 After Switching the  traffics 
 ![Blue Green Deployment(after switching)](https://github.com/Prerana-Mauryaa/Blue-Green-Deployment-On-EKS/blob/master/Diagrams/after_switching.png)
